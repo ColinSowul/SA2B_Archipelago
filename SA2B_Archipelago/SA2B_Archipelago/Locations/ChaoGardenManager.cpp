@@ -1,6 +1,7 @@
 #include "../pch.h"
 #include "ChaoGardenManager.h"
 #include "LocationManager.h"
+#include "../Items/ItemManager.h"
 #include "../Utilities/MessageQueue.h"
 
 
@@ -44,6 +45,10 @@ static void __cdecl BlackMarketPurchase()
 		LocationManager::getInstance().SendBlackMarketLocationCheck(selectedLocationIndex);
 		BlackMarketObject->Data2.BlackMarket->MenuSelection = 0;
 		BlackMarketObject->Data2.BlackMarket->MenuOffset = 0;
+
+		if (ChaoBreedingActive == 1 && selectedLocationIndex == -1) {
+			ItemManager::getInstance().HandleFruit(10 + 0x200);
+		}
 	}
 }
 // End Black Market Purchase "Trampoline"
