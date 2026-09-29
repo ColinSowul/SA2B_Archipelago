@@ -850,6 +850,7 @@ void StageSelectManager::HandleGoal()
 	{
 		HandleBossRush();
 	}
+	//TODO: NEW GOAL (nest inside chaos chao check?)
 	else if (this->_goal == 7)
 	{
 		HandleChaosChao();

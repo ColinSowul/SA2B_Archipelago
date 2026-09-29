@@ -26,6 +26,8 @@ DataArray(BlackMarketStockItem, BlackMarketFruitStock, 0x8A8028, 0x18);
 DataArray(BlackMarketStockItem, BlackMarketHatStock,   0x8A81A8, 0x55);
 DataArray(BlackMarketStockItem, BlackMarketMenuStock,  0x8A86F8, 0x3);
 
+const int HEART_FRUIT_INDEX = 10;
+
 ObjectMaster* BlackMarketObject = nullptr;
 void __cdecl alg_blackmarket_prolog_r(ObjectMaster* obj);
 Trampoline alg_blackmarket_prolog_t(0x58BFC0, 0x58BFC5, alg_blackmarket_prolog_r);
@@ -38,17 +40,21 @@ void __cdecl alg_blackmarket_prolog_r(ObjectMaster* obj)
 // Black Market Purchase "Trampoline"
 static void __cdecl BlackMarketPurchase()
 {
-	int ChaoBreedingActive = 1;
+	int ChaoBreedingActive = ChaoGardenManager::GetInstance().GetChaoBreeding();
 	if (BlackMarketObject && BlackMarketObject->Data2.BlackMarket)
 	{
 		int selectedLocationIndex = BlackMarketObject->Data2.BlackMarket->MenuSelection - ChaoBreedingActive;
-		LocationManager::getInstance().SendBlackMarketLocationCheck(selectedLocationIndex);
+		if (selectedLocationIndex >= 0)
+		{
+			LocationManager::getInstance().SendBlackMarketLocationCheck(selectedLocationIndex);
+		}
+		else if (ChaoBreedingActive == 1 && selectedLocationIndex == -1) {
+			ItemManager::getInstance().HandleFruit(HEART_FRUIT_INDEX + 0x200);
+		}
+
 		BlackMarketObject->Data2.BlackMarket->MenuSelection = 0;
 		BlackMarketObject->Data2.BlackMarket->MenuOffset = 0;
 
-		if (ChaoBreedingActive == 1 && selectedLocationIndex == -1) {
-			ItemManager::getInstance().HandleFruit(10 + 0x200);
-		}
 	}
 }
 // End Black Market Purchase "Trampoline"
@@ -299,18 +305,17 @@ void ChaoGardenManager::HandleBlackMarket()
 		unsigned int textAddress = (int)(BlackMarketObject->Data2.BlackMarket->textPtr);
 
 		std::vector<int> ActiveMarketSlots = LocationManager::getInstance().GetAvailableBlackMarketLocations();
-		int ChaoBreedingActive = 1;
-		int ItemCount = min(10, ActiveMarketSlots.size() + ChaoBreedingActive);
+		int ItemCount = min(10, ActiveMarketSlots.size() + _chaoBreeding);
 		BlackMarketItemCount = ItemCount;
 
-		if (ChaoBreedingActive == 1) {
+		if (_chaoBreeding == 1) {
 			BlackMarketInventory[0].Category = ChaoItemCategory::ChaoItemCategory_Fruit;
-			BlackMarketInventory[0].Type = 10; //Heart Fruit
+			BlackMarketInventory[0].Type = HEART_FRUIT_INDEX;
 		}
 
-		for (int i = 0 + 1; i < ItemCount; i++)
+		for (int i = 0 + _chaoBreeding; i < ItemCount; i++)
 		{
-			int SlotIdx = ActiveMarketSlots[i - ChaoBreedingActive];
+			int SlotIdx = ActiveMarketSlots[i - _chaoBreeding];
 
 			BlackMarketInventory[i].Category = ChaoItemCategory::ChaoItemCategory_Egg;
 			BlackMarketInventory[i].Type = i;
@@ -717,6 +722,16 @@ void ChaoGardenManager::SetBlackMarketSlots(int blackMarketSlots)
 	}
 }
 
+void ChaoGardenManager::SetChaoBreeding(int chaoBreeding)
+{
+	//Stored as int to act as index offset for black market shop slots
+	this->_chaoBreeding = chaoBreeding;
+	
+	if (chaoBreeding != 0) {
+		this->SetChaoEnabled(true);
+	}
+}
+
 void ChaoGardenManager::SetBlackMarketData(std::map<int, int> map)
 {
 	this->_blackMarketData = map;
@@ -746,6 +761,18 @@ int ChaoGardenManager::GetTimescale()
 	else
 	{
 		return this->_timescale;
+	}
+}
+
+int ChaoGardenManager::GetChaoBreeding()
+{
+	if (!this->_chaoEnabled)
+	{
+		return 0;
+	}
+	else
+	{
+		return this->_chaoBreeding;
 	}
 }
 
