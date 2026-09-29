@@ -174,7 +174,7 @@ void ChaoGardenManager::OnFrameFunction()
 	ChaoGardenTimescale = 120.0f / this->_timescale;
 
 	// Black Market
-	if (this->_blackMarketSlots > 0)
+	if (this->_blackMarketSlots > 0 || this->_chaoBreeding != 0)
 	{
 		this->HandleBlackMarket();
 	}
