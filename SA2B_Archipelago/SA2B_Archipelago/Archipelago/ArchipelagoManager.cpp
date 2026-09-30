@@ -572,8 +572,7 @@ void SA2_SetGoal(int goal)
 
     ssm->SetGoal(goal);
 
-    //TODO: ADD CHECK FOR NEW GOAL
-    if (goal == 7)
+    if (goal == 7 || goal == 9)
     {
         ChaoGardenManager::GetInstance().SetChaoEnabled(true);
     }
