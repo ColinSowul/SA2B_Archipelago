@@ -850,7 +850,7 @@ void StageSelectManager::HandleGoal()
 	{
 		HandleBossRush();
 	}
-	else if (this->_goal == 7)
+	else if (this->_goal == 7 || this->_goal == 9)
 	{
 		HandleChaosChao();
 	}
@@ -1126,6 +1126,15 @@ void StageSelectManager::HandleChaosChao()
 			chaoData.Type == ChaoType::ChaoType_Neutral_Chaos ||
 			chaoData.Type == ChaoType::ChaoType_Dark_Chaos)
 		{
+			if (this->_goal == 9 && (chaoData.StatGrades[0] != 5 ||
+				chaoData.StatGrades[1] != 5 ||
+				chaoData.StatGrades[2] != 5 ||
+				chaoData.StatGrades[3] != 5 ||
+				chaoData.StatGrades[4] != 5))
+			{
+				continue;
+			}
+
 			MessageQueue* messageQueue = &MessageQueue::GetInstance();
 			std::string msg = "Victory!";
 			messageQueue->AddMessage(msg);

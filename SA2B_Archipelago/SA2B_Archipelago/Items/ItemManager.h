@@ -39,6 +39,7 @@ public:
 	void SetMinigameMadnessAmount(int minigameAmount);
 	bool IsOmotrapActive();
 	void HandleJunk(int item_id);
+	void HandleFruit(int item_id);
 
 	std::vector<int> GetChaosEmeraldAddresses();
 	std::vector<int> GetMinigameAddresses();
@@ -64,7 +65,6 @@ private:
 
 	void OnFrameChaoGardenQueue();
 	void HandleEgg(int item_id);
-	void HandleFruit(int item_id);
 	void HandleSeed(int item_id);
 	void HandleHat(int item_id);
 	void HandleAnimal(int item_id);

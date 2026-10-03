@@ -51,6 +51,7 @@ public:
 	void SetChaoBodyPartsEnabled(bool chaoBodyPartsEnabled);
 	void SetChaoKindergartenEnabled(bool chaoKindergartenEnabled);
 	void SetBlackMarketSlots(int blackMarketSlots);
+	void SetChaoBreeding(int chaoBreeding);
 
 	void SetBlackMarketData(std::map<int, int> map);
 
@@ -60,6 +61,7 @@ public:
 	void SetChaoERData(std::map<int, int> map);
 
 	int GetTimescale();
+	int GetChaoBreeding();
 
 	void LoadAPTextures();
 	void ReleaseAPTextures();
@@ -89,6 +91,7 @@ private:
 	bool _chaoBodyPartsEnabled = false;
 	bool _chaoKindergartenEnabled = false;
 	int _blackMarketSlots = 0;
+	int _chaoBreeding = 0;
 	
 	std::map<int, int> _blackMarketData;
 

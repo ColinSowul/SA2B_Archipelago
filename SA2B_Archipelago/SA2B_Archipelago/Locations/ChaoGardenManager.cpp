@@ -1,6 +1,7 @@
 #include "../pch.h"
 #include "ChaoGardenManager.h"
 #include "LocationManager.h"
+#include "../Items/ItemManager.h"
 #include "../Utilities/MessageQueue.h"
 
 
@@ -25,6 +26,8 @@ DataArray(BlackMarketStockItem, BlackMarketFruitStock, 0x8A8028, 0x18);
 DataArray(BlackMarketStockItem, BlackMarketHatStock,   0x8A81A8, 0x55);
 DataArray(BlackMarketStockItem, BlackMarketMenuStock,  0x8A86F8, 0x3);
 
+const int HEART_FRUIT_INDEX = 10;
+
 ObjectMaster* BlackMarketObject = nullptr;
 void __cdecl alg_blackmarket_prolog_r(ObjectMaster* obj);
 Trampoline alg_blackmarket_prolog_t(0x58BFC0, 0x58BFC5, alg_blackmarket_prolog_r);
@@ -37,11 +40,21 @@ void __cdecl alg_blackmarket_prolog_r(ObjectMaster* obj)
 // Black Market Purchase "Trampoline"
 static void __cdecl BlackMarketPurchase()
 {
+	int ChaoBreedingActive = ChaoGardenManager::GetInstance().GetChaoBreeding();
 	if (BlackMarketObject && BlackMarketObject->Data2.BlackMarket)
 	{
-		LocationManager::getInstance().SendBlackMarketLocationCheck(BlackMarketObject->Data2.BlackMarket->MenuSelection);
+		int selectedLocationIndex = BlackMarketObject->Data2.BlackMarket->MenuSelection - ChaoBreedingActive;
+		if (selectedLocationIndex >= 0)
+		{
+			LocationManager::getInstance().SendBlackMarketLocationCheck(selectedLocationIndex);
+		}
+		else if (ChaoBreedingActive == 1 && selectedLocationIndex == -1) {
+			ItemManager::getInstance().HandleFruit(HEART_FRUIT_INDEX + 0x200);
+		}
+
 		BlackMarketObject->Data2.BlackMarket->MenuSelection = 0;
 		BlackMarketObject->Data2.BlackMarket->MenuOffset = 0;
+
 	}
 }
 // End Black Market Purchase "Trampoline"
@@ -161,7 +174,7 @@ void ChaoGardenManager::OnFrameFunction()
 	ChaoGardenTimescale = 120.0f / this->_timescale;
 
 	// Black Market
-	if (this->_blackMarketSlots > 0)
+	if (this->_blackMarketSlots > 0 || this->_chaoBreeding != 0)
 	{
 		this->HandleBlackMarket();
 	}
@@ -292,12 +305,17 @@ void ChaoGardenManager::HandleBlackMarket()
 		unsigned int textAddress = (int)(BlackMarketObject->Data2.BlackMarket->textPtr);
 
 		std::vector<int> ActiveMarketSlots = LocationManager::getInstance().GetAvailableBlackMarketLocations();
-		int ItemCount = min(10, ActiveMarketSlots.size());
+		int ItemCount = min(10, ActiveMarketSlots.size() + _chaoBreeding);
 		BlackMarketItemCount = ItemCount;
 
-		for (int i = 0; i < ItemCount; i++)
+		if (_chaoBreeding == 1) {
+			BlackMarketInventory[0].Category = ChaoItemCategory::ChaoItemCategory_Fruit;
+			BlackMarketInventory[0].Type = HEART_FRUIT_INDEX;
+		}
+
+		for (int i = 0 + _chaoBreeding; i < ItemCount; i++)
 		{
-			int SlotIdx = ActiveMarketSlots[i];
+			int SlotIdx = ActiveMarketSlots[i - _chaoBreeding];
 
 			BlackMarketInventory[i].Category = ChaoItemCategory::ChaoItemCategory_Egg;
 			BlackMarketInventory[i].Type = i;
@@ -468,8 +486,16 @@ void ChaoGardenManager::HandleStartingEggs()
 					else
 					{
 						ChaoSlots[chaoIdx].data.MonotoneHighlights = !twoTone;
+						ChaoSlots[chaoIdx].data.DNA.MonotoneFlag1 = !twoTone;
+						ChaoSlots[chaoIdx].data.DNA.MonotoneFlag2 = !twoTone;
+
 						ChaoSlots[chaoIdx].data.Color = color;
+						ChaoSlots[chaoIdx].data.DNA.Color1 = color;
+						ChaoSlots[chaoIdx].data.DNA.Color2 = color;
+
 						ChaoSlots[chaoIdx].data.Shiny = shiny;
+						ChaoSlots[chaoIdx].data.DNA.ShinyFlag1 = shiny;
+						ChaoSlots[chaoIdx].data.DNA.ShinyFlag2 = shiny;
 					}
 					ChaoSlots[chaoIdx].data.EggColor = color;
 				}
@@ -704,6 +730,16 @@ void ChaoGardenManager::SetBlackMarketSlots(int blackMarketSlots)
 	}
 }
 
+void ChaoGardenManager::SetChaoBreeding(int chaoBreeding)
+{
+	//Stored as int to act as index offset for black market shop slots
+	this->_chaoBreeding = chaoBreeding;
+	
+	if (chaoBreeding != 0) {
+		this->SetChaoEnabled(true);
+	}
+}
+
 void ChaoGardenManager::SetBlackMarketData(std::map<int, int> map)
 {
 	this->_blackMarketData = map;
@@ -733,6 +769,18 @@ int ChaoGardenManager::GetTimescale()
 	else
 	{
 		return this->_timescale;
+	}
+}
+
+int ChaoGardenManager::GetChaoBreeding()
+{
+	if (!this->_chaoEnabled)
+	{
+		return 0;
+	}
+	else
+	{
+		return this->_chaoBreeding;
 	}
 }
 

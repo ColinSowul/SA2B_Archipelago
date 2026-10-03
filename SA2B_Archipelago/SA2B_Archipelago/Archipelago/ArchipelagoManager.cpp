@@ -572,7 +572,7 @@ void SA2_SetGoal(int goal)
 
     ssm->SetGoal(goal);
 
-    if (goal == 7)
+    if (goal == 7 || goal == 9)
     {
         ChaoGardenManager::GetInstance().SetChaoEnabled(true);
     }
@@ -1150,6 +1150,17 @@ void SA2_SetPlayerNum(int playerNum)
     ArchipelagoManager::getInstance().ap_player_num = playerNum;
 }
 
+void SA2_SetChaoBreeding(int chaoBreeding) {
+    if (!ArchipelagoManager::getInstance().IsInit())
+    {
+        return;
+    }
+
+    ChaoGardenManager* chaoGardenManager = &ChaoGardenManager::GetInstance();
+
+    chaoGardenManager->SetChaoBreeding(chaoBreeding);
+}
+
 void ArchipelagoManager::Init(const char* ip, const char* playerName, const char* password)
 {
     AP_Init(ip, "Sonic Adventure 2 Battle", playerName, password);
@@ -1214,6 +1225,7 @@ void ArchipelagoManager::Init(const char* ip, const char* playerName, const char
     AP_RegisterSlotDataMapIntIntCallback("BossRushMap", &SA2_SetChosenBossRushMap);
     AP_RegisterSlotDataMapIntIntCallback("ActiveTraps", &SA2_SetActiveTraps);
     AP_RegisterSlotDataIntCallback("PlayerNum", &SA2_SetPlayerNum);
+    AP_RegisterSlotDataIntCallback("ChaoBreeding", &SA2_SetChaoBreeding);
     AP_Start();
 }
 
