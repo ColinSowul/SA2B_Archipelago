@@ -486,8 +486,16 @@ void ChaoGardenManager::HandleStartingEggs()
 					else
 					{
 						ChaoSlots[chaoIdx].data.MonotoneHighlights = !twoTone;
+						ChaoSlots[chaoIdx].data.DNA.MonotoneFlag1 = !twoTone;
+						ChaoSlots[chaoIdx].data.DNA.MonotoneFlag2 = !twoTone;
+
 						ChaoSlots[chaoIdx].data.Color = color;
+						ChaoSlots[chaoIdx].data.DNA.Color1 = color;
+						ChaoSlots[chaoIdx].data.DNA.Color2 = color;
+
 						ChaoSlots[chaoIdx].data.Shiny = shiny;
+						ChaoSlots[chaoIdx].data.DNA.ShinyFlag1 = shiny;
+						ChaoSlots[chaoIdx].data.DNA.ShinyFlag2 = shiny;
 					}
 					ChaoSlots[chaoIdx].data.EggColor = color;
 				}
